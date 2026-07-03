@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดเก็บข้อมูลสัตว์เลี้ยง</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* ฟอร์มกรอกข้อมูล */
+        .form-card {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+            background-color: #f8fafc;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-submit {
+            background-color: #2563eb;
+            color: white;
+            padding: 11px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            height: 42px;
+        }
+
+        .btn-submit:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* ตารางแสดงผลข้อมูล */
+        .table-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #475569;
+            padding: 16px;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Badge สถานะประเภทสัตว์ */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .badge-dog { background-color: #dbeafe; color: #1e40af; }
+        .badge-cat { background-color: #ffedd5; color: #9a3412; }
+        .badge-pig { background-color: #fce7f3; color: #9d174d; }
+
+        /* ปุ่มลบข้อมูล */
+        .btn-delete {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        .empty-row {
+            text-align: center;
+            color: #94a3b8;
+            padding: 32px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ระบบฐานข้อมูลสัตว์เลี้ยงแสนรัก 📊</h1>
+        <p>บันทึก จัดการ และตรวจสอบรายชื่อสัตว์เลี้ยงของคุณในรูปแบบตารางสถิติ</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="form-card">
+            <div class="form-title">➕ เพิ่มรายชื่อสัตว์เลี้ยงใหม่</div>
+            <form id="petForm" onsubmit="addData(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="petName">ชื่อสัตว์เลี้ยง</label>
+                        <input type="text" id="petName" placeholder="เช่น บราวนี่, ถุงเงิน" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="petType">ประเภท</label>
+                        <select id="petType" required>
+                            <option value="หมา">สุนัข (Dog)</option>
+                            <option value="แมว">แมว (Cat)</option>
+                            <option value="หมู">หมู (Pig)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="petAge">อายุ (ปี)</label>
+                        <input type="number" id="petAge" min="0" max="50" placeholder="เช่น 2" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="petOwner">ชื่อเจ้าของ</label>
+                        <input type="text" id="petOwner" placeholder="ชื่อผู้ดูแล" required>
+                    </div>
+                    <button type="submit" class="btn-submit">บันทึกข้อมูล</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ลำดับ</th>
+                            <th>ชื่อสัตว์เลี้ยง</th>
+                            <th>ประเภท</th>
+                            <th>อายุ (ปี)</th>
+                            <th>ชื่อเจ้าของ</th>
+                            <th style="width: 100px; text-align: center;">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr id="row-1">
+                            <td>1</td>
+                            <td style="font-weight: 500;">ด็อบบี้</td>
+                            <td><span class="badge badge-dog">หมา</span></td>
+                            <td>3</td>
+                            <td>สมชาย ใจดี</td>
+                            <td style="text-align: center;"><button class="btn-delete" onclick="deleteRow('row-1')">ลบ</button></td>
+                        </tr>
+                        <tr id="row-2">
+                            <td>2</td>
+                            <td style="font-weight: 500;">ส้มหยุด</td>
+                            <td><span class="badge badge-cat">แมว</span></td>
+                            <td>1</td>
+                            <td>มณี รักสัตว์</td>
+                            <td style="text-align: center;"><button class="btn-delete" onclick="deleteRow('row-2')">ลบ</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ตัวนับจำนวนแถวเพื่อใช้เป็น ID และลำดับข้อมูล
+        let rowCount = 2;
+
+        // ฟังก์ชันสำหรับเพิ่มข้อมูลลงตาราง
+        function addData(event) {
+            event.preventDefault(); // ป้องกันหน้าเว็บรีเฟรชเมื่อกดส่งฟอร์ม
+
+            // ดึงค่าจากกล่องกรอกข้อมูล
+            const name = document.getElementById('petName').value;
+            const type = document.getElementById('petType').value;
+            const age = document.getElementById('petAge').value;
+            const owner = document.getElementById('petOwner').value;
+
+            rowCount++;
+            const rowId = `row-${rowCount}`;
+
+            // เลือกสไตล์ของ Badge ตามประเภทสัตว์
+            let badgeClass = 'badge-dog';
+            if (type === 'แมว') badgeClass = 'badge-cat';
+            if (type === 'หมู') badgeClass = 'badge-pig';
+
+            const tableBody = document.getElementById('tableBody');
+
+            // ตรวจสอบว่าถ้าเคยแสดงข้อความ "ไม่มีข้อมูล" ให้ลบออกก่อน
+            const emptyMessage = document.getElementById('emptyMessage');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            // สร้างแถวตาราง (Row) ใหม่
+            const newRow = document.createElement('tr');
+            newRow.id = rowId;
+            newRow.innerHTML = `
+                <td>${tableBody.children.length + 1}</td>
+                <td style="font-weight: 500;">${name}</td>
+                <td><span class="badge ${badgeClass}">${type}</span></td>
+                <td>${age}</td>
+                <td>${owner}</td>
+                <td style="text-align: center;"><button class="btn-delete" onclick="deleteRow('${rowId}')">ลบ</button></td>
+            `;
+
+            // เพิ่มแถวใหม่ลงไปในตาราง
+            tableBody.appendChild(newRow);
+
+            // รีเซ็ตฟอร์มให้ว่างพร้อมกรอกข้อมูลถัดไป
+            document.getElementById('petForm').reset();
+            updateRowNumbers();
+        }
+
+        // ฟังก์ชันลบข้อมูลแถวที่เลือก
+        function deleteRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                updateRowNumbers(); // อัปเดตเลขลำดับข้อที่เหลือใหม่
+            }
+        }
+
+        // ฟังก์ชันอัปเดตเลขลำดับ (1, 2, 3...) เรียงใหม่ให้ถูกต้องเมื่อมีการเพิ่มหรือลบข้อมูล
+        function updateRowNumbers() {
+            const tableBody = document.getElementById('tableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+            
+            if (rows.length === 0) {
+                tableBody.innerHTML = `<tr id="emptyMessage"><td colspan="6" class="empty-row">❌ ยังไม่มีข้อมูลสัตว์เลี้ยงในระบบคลังพัสดุ</td></tr>`;
+                return;
+            }
+
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].id !== 'emptyMessage') {
+                    rows[i].getElementsByTagName('td')[0].innerText = i + 1;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
